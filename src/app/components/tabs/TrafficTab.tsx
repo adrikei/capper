@@ -1,8 +1,13 @@
 'use client';
 
+import React from 'react';
 import { useState } from 'react';
 
-export default function TrafficTab() {
+interface TrafficTabProps {
+  // Add any props if needed
+}
+
+const TrafficTab: React.FC<TrafficTabProps> = () => {
   const [dailyUsers, setDailyUsers] = useState<string>('');
 
   const handleSubmit = (e: React.FormEvent) => {
@@ -47,4 +52,6 @@ export default function TrafficTab() {
       </form>
     </div>
   );
-} 
+};
+
+export default TrafficTab; 

@@ -1,17 +1,21 @@
 'use client';
 
-import { useState } from 'react';
+import React, { useState } from 'react';
 import TrafficTab from './tabs/TrafficTab';
 import StorageTab from './tabs/StorageTab';
 import BandwidthTab from './tabs/BandwidthTab';
 import MemoryTab from './tabs/MemoryTab';
+import { ProjectDetailsTab } from './tabs/ProjectDetailsTab';
 
-type Tab = 'traffic' | 'storage' | 'bandwidth' | 'memory';
+type Tab = 'project' | 'traffic' | 'storage' | 'bandwidth' | 'memory';
 
-export default function Tabs() {
-  const [activeTab, setActiveTab] = useState<Tab>('traffic');
+export const Tabs: React.FC = () => {
+  const [activeTab, setActiveTab] = useState<Tab>('project');
+  const [projectName, setProjectName] = useState('');
+  const [projectDescription, setProjectDescription] = useState('');
 
-  const tabs = [
+  const tabs: { id: Tab; label: string }[] = [
+    { id: 'project', label: 'Project Details' },
     { id: 'traffic', label: 'Traffic' },
     { id: 'storage', label: 'Storage' },
     { id: 'bandwidth', label: 'Bandwidth' },
@@ -25,13 +29,13 @@ export default function Tabs() {
           {tabs.map((tab) => (
             <button
               key={tab.id}
-              onClick={() => setActiveTab(tab.id as Tab)}
+              onClick={() => setActiveTab(tab.id)}
               className={`
-                whitespace-nowrap py-4 px-1 border-b-2 font-medium text-sm
+                whitespace-nowrap border-b-2 py-4 px-1 text-sm font-medium
                 ${
                   activeTab === tab.id
-                    ? 'border-blue-500 text-blue-600'
-                    : 'border-transparent text-gray-500 hover:text-gray-700 hover:border-gray-300'
+                    ? 'border-indigo-500 text-indigo-600'
+                    : 'border-transparent text-gray-500 hover:border-gray-300 hover:text-gray-700'
                 }
               `}
             >
@@ -40,7 +44,16 @@ export default function Tabs() {
           ))}
         </nav>
       </div>
+
       <div className="mt-6">
+        {activeTab === 'project' && (
+          <ProjectDetailsTab
+            projectName={projectName}
+            projectDescription={projectDescription}
+            onProjectNameChange={setProjectName}
+            onProjectDescriptionChange={setProjectDescription}
+          />
+        )}
         {activeTab === 'traffic' && <TrafficTab />}
         {activeTab === 'storage' && <StorageTab />}
         {activeTab === 'bandwidth' && <BandwidthTab />}
@@ -48,4 +61,4 @@ export default function Tabs() {
       </div>
     </div>
   );
-}
+};
