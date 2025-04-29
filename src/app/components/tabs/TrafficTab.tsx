@@ -2,25 +2,39 @@
 
 import React from 'react';
 
+type Magnitude = '1' | '1K' | '1M' | '1B';
+
 interface TrafficTabProps {
-  dailyUsers: string;
+  dailyUsersNumber: string;
+  dailyUsersMagnitude: Magnitude;
   avgReadRequests: string;
   avgWriteRequests: string;
-  onDailyUsersChange: (value: string) => void;
+  onDailyUsersNumberChange: (value: string) => void;
+  onDailyUsersMagnitudeChange: (value: Magnitude) => void;
   onAvgReadRequestsChange: (value: string) => void;
   onAvgWriteRequestsChange: (value: string) => void;
 }
 
 const TrafficTab: React.FC<TrafficTabProps> = ({
-  dailyUsers,
+  dailyUsersNumber,
+  dailyUsersMagnitude,
   avgReadRequests,
   avgWriteRequests,
-  onDailyUsersChange,
+  onDailyUsersNumberChange,
+  onDailyUsersMagnitudeChange,
   onAvgReadRequestsChange,
   onAvgWriteRequestsChange,
 }) => {
   const calculateTotalRequests = () => {
-    const users = parseInt(dailyUsers) || 0;
+    const baseUsers = parseInt(dailyUsersNumber) || 0;
+    const magnitudeMultiplier = {
+      '1': 1,
+      '1K': 1000,
+      '1M': 1000000,
+      '1B': 1000000000,
+    }[dailyUsersMagnitude];
+    
+    const users = baseUsers * magnitudeMultiplier;
     const reads = parseInt(avgReadRequests) || 0;
     const writes = parseInt(avgWriteRequests) || 0;
 
@@ -41,18 +55,34 @@ const TrafficTab: React.FC<TrafficTabProps> = ({
             <label htmlFor="dailyUsers" className="block text-sm font-medium text-gray-700">
               Daily Active Users
             </label>
-            <div className="mt-1">
-              <input
-                type="number"
-                name="dailyUsers"
-                id="dailyUsers"
-                value={dailyUsers}
-                onChange={(e) => onDailyUsersChange(e.target.value)}
-                className="shadow-sm focus:ring-blue-500 focus:border-blue-500 block w-full sm:text-sm border-gray-300 rounded-md"
-                placeholder="Enter number of daily active users"
-                min="0"
-                required
-              />
+            <div className="mt-1 flex gap-2">
+              <div className="flex-1">
+                <input
+                  type="number"
+                  name="dailyUsersNumber"
+                  id="dailyUsersNumber"
+                  value={dailyUsersNumber}
+                  onChange={(e) => onDailyUsersNumberChange(e.target.value)}
+                  className="shadow-sm focus:ring-blue-500 focus:border-blue-500 block w-full sm:text-sm border-gray-300 rounded-md"
+                  placeholder="Enter number"
+                  min="0"
+                  required
+                />
+              </div>
+              <div className="w-24">
+                <select
+                  name="dailyUsersMagnitude"
+                  id="dailyUsersMagnitude"
+                  value={dailyUsersMagnitude}
+                  onChange={(e) => onDailyUsersMagnitudeChange(e.target.value as Magnitude)}
+                  className="shadow-sm focus:ring-blue-500 focus:border-blue-500 block w-full sm:text-sm border-gray-300 rounded-md"
+                >
+                  <option value="1">Users</option>
+                  <option value="1K">Thousands</option>
+                  <option value="1M">Millions</option>
+                  <option value="1B">Billions</option>
+                </select>
+              </div>
             </div>
             <p className="mt-2 text-sm text-gray-500">
               Enter the estimated number of daily active users for your application.

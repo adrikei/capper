@@ -8,6 +8,7 @@ import MemoryTab from './tabs/MemoryTab';
 import { ProjectDetailsTab } from './tabs/ProjectDetailsTab';
 
 type Tab = 'project' | 'traffic' | 'storage' | 'bandwidth' | 'memory';
+type Magnitude = '1' | '1K' | '1M' | '1B';
 
 export const Tabs: React.FC = () => {
   const [activeTab, setActiveTab] = useState<Tab>('project');
@@ -15,7 +16,8 @@ export const Tabs: React.FC = () => {
   const [projectDescription, setProjectDescription] = useState('');
   
   // Traffic-related state
-  const [dailyUsers, setDailyUsers] = useState('');
+  const [dailyUsersNumber, setDailyUsersNumber] = useState('');
+  const [dailyUsersMagnitude, setDailyUsersMagnitude] = useState<Magnitude>('1');
   const [avgReadRequests, setAvgReadRequests] = useState('');
   const [avgWriteRequests, setAvgWriteRequests] = useState('');
 
@@ -61,10 +63,12 @@ export const Tabs: React.FC = () => {
         )}
         {activeTab === 'traffic' && (
           <TrafficTab
-            dailyUsers={dailyUsers}
+            dailyUsersNumber={dailyUsersNumber}
+            dailyUsersMagnitude={dailyUsersMagnitude}
             avgReadRequests={avgReadRequests}
             avgWriteRequests={avgWriteRequests}
-            onDailyUsersChange={setDailyUsers}
+            onDailyUsersNumberChange={setDailyUsersNumber}
+            onDailyUsersMagnitudeChange={setDailyUsersMagnitude}
             onAvgReadRequestsChange={setAvgReadRequests}
             onAvgWriteRequestsChange={setAvgWriteRequests}
           />
