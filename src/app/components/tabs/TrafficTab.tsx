@@ -3,27 +3,24 @@
 import React from 'react';
 
 type Magnitude = '1' | '1K' | '1M' | '1B';
+type ReadWriteRatio = '10:1' | '50:1' | '100:1';
 
 interface TrafficTabProps {
   dailyUsersNumber: string;
   dailyUsersMagnitude: Magnitude;
-  avgReadRequests: string;
-  avgWriteRequests: string;
+  readWriteRatio: ReadWriteRatio;
   onDailyUsersNumberChange: (value: string) => void;
   onDailyUsersMagnitudeChange: (value: Magnitude) => void;
-  onAvgReadRequestsChange: (value: string) => void;
-  onAvgWriteRequestsChange: (value: string) => void;
+  onReadWriteRatioChange: (value: ReadWriteRatio) => void;
 }
 
 const TrafficTab: React.FC<TrafficTabProps> = ({
   dailyUsersNumber,
   dailyUsersMagnitude,
-  avgReadRequests,
-  avgWriteRequests,
+  readWriteRatio,
   onDailyUsersNumberChange,
   onDailyUsersMagnitudeChange,
-  onAvgReadRequestsChange,
-  onAvgWriteRequestsChange,
+  onReadWriteRatioChange,
 }) => {
   const calculateTotalRequests = () => {
     const baseUsers = parseInt(dailyUsersNumber) || 0;
@@ -35,12 +32,12 @@ const TrafficTab: React.FC<TrafficTabProps> = ({
     }[dailyUsersMagnitude];
     
     const users = baseUsers * magnitudeMultiplier;
-    const reads = parseInt(avgReadRequests) || 0;
-    const writes = parseInt(avgWriteRequests) || 0;
+    const [reads, writes] = readWriteRatio.split(':').map(Number);
+    const writeMultiplier = 1 / writes;
 
     return {
-      totalReadRequests: users * reads,
-      totalWriteRequests: users * writes,
+      totalReadRequests: users * reads * writeMultiplier,
+      totalWriteRequests: users * writeMultiplier,
     };
   };
 
@@ -90,46 +87,30 @@ const TrafficTab: React.FC<TrafficTabProps> = ({
           </div>
 
           <div>
-            <label htmlFor="avgReadRequests" className="block text-sm font-medium text-gray-700">
-              Average Read Requests per User
+            <label className="block text-sm font-medium text-gray-700">
+              Read/Write Ratio
             </label>
-            <div className="mt-1">
-              <input
-                type="number"
-                name="avgReadRequests"
-                id="avgReadRequests"
-                value={avgReadRequests}
-                onChange={(e) => onAvgReadRequestsChange(e.target.value)}
-                className="shadow-sm focus:ring-blue-500 focus:border-blue-500 block w-full sm:text-sm border-gray-300 rounded-md"
-                placeholder="Enter average read requests per user"
-                min="0"
-                required
-              />
+            <div className="mt-1 flex gap-2">
+              {(['10:1', '50:1', '100:1'] as ReadWriteRatio[]).map((ratio) => (
+                <button
+                  key={ratio}
+                  type="button"
+                  onClick={() => onReadWriteRatioChange(ratio)}
+                  className={`
+                    flex-1 py-2 px-4 border rounded-md text-sm font-medium
+                    ${
+                      readWriteRatio === ratio
+                        ? 'bg-blue-50 border-blue-500 text-blue-700'
+                        : 'border-gray-300 text-gray-700 hover:bg-gray-50'
+                    }
+                  `}
+                >
+                  {ratio}
+                </button>
+              ))}
             </div>
             <p className="mt-2 text-sm text-gray-500">
-              Enter the average number of read requests each user makes per day.
-            </p>
-          </div>
-
-          <div>
-            <label htmlFor="avgWriteRequests" className="block text-sm font-medium text-gray-700">
-              Average Write Requests per User
-            </label>
-            <div className="mt-1">
-              <input
-                type="number"
-                name="avgWriteRequests"
-                id="avgWriteRequests"
-                value={avgWriteRequests}
-                onChange={(e) => onAvgWriteRequestsChange(e.target.value)}
-                className="shadow-sm focus:ring-blue-500 focus:border-blue-500 block w-full sm:text-sm border-gray-300 rounded-md"
-                placeholder="Enter average write requests per user"
-                min="0"
-                required
-              />
-            </div>
-            <p className="mt-2 text-sm text-gray-500">
-              Enter the average number of write requests each user makes per day.
+              Select the ratio of read to write requests.
             </p>
           </div>
         </div>
