@@ -13,6 +13,11 @@ export const Tabs: React.FC = () => {
   const [activeTab, setActiveTab] = useState<Tab>('project');
   const [projectName, setProjectName] = useState('');
   const [projectDescription, setProjectDescription] = useState('');
+  
+  // Traffic-related state
+  const [dailyUsers, setDailyUsers] = useState('');
+  const [avgReadRequests, setAvgReadRequests] = useState('');
+  const [avgWriteRequests, setAvgWriteRequests] = useState('');
 
   const tabs: { id: Tab; label: string }[] = [
     { id: 'project', label: 'Project Details' },
@@ -54,7 +59,16 @@ export const Tabs: React.FC = () => {
             onProjectDescriptionChange={setProjectDescription}
           />
         )}
-        {activeTab === 'traffic' && <TrafficTab />}
+        {activeTab === 'traffic' && (
+          <TrafficTab
+            dailyUsers={dailyUsers}
+            avgReadRequests={avgReadRequests}
+            avgWriteRequests={avgWriteRequests}
+            onDailyUsersChange={setDailyUsers}
+            onAvgReadRequestsChange={setAvgReadRequests}
+            onAvgWriteRequestsChange={setAvgWriteRequests}
+          />
+        )}
         {activeTab === 'storage' && <StorageTab />}
         {activeTab === 'bandwidth' && <BandwidthTab />}
         {activeTab === 'memory' && <MemoryTab />}

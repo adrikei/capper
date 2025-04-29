@@ -1,17 +1,24 @@
 'use client';
 
 import React from 'react';
-import { useState } from 'react';
 
 interface TrafficTabProps {
-  // Add any props if needed
+  dailyUsers: string;
+  avgReadRequests: string;
+  avgWriteRequests: string;
+  onDailyUsersChange: (value: string) => void;
+  onAvgReadRequestsChange: (value: string) => void;
+  onAvgWriteRequestsChange: (value: string) => void;
 }
 
-const TrafficTab: React.FC<TrafficTabProps> = () => {
-  const [dailyUsers, setDailyUsers] = useState<string>('');
-  const [avgReadRequests, setAvgReadRequests] = useState<string>('');
-  const [avgWriteRequests, setAvgWriteRequests] = useState<string>('');
-
+const TrafficTab: React.FC<TrafficTabProps> = ({
+  dailyUsers,
+  avgReadRequests,
+  avgWriteRequests,
+  onDailyUsersChange,
+  onAvgReadRequestsChange,
+  onAvgWriteRequestsChange,
+}) => {
   const calculateTotalRequests = () => {
     const users = parseInt(dailyUsers) || 0;
     const reads = parseInt(avgReadRequests) || 0;
@@ -40,7 +47,7 @@ const TrafficTab: React.FC<TrafficTabProps> = () => {
                 name="dailyUsers"
                 id="dailyUsers"
                 value={dailyUsers}
-                onChange={(e) => setDailyUsers(e.target.value)}
+                onChange={(e) => onDailyUsersChange(e.target.value)}
                 className="shadow-sm focus:ring-blue-500 focus:border-blue-500 block w-full sm:text-sm border-gray-300 rounded-md"
                 placeholder="Enter number of daily active users"
                 min="0"
@@ -62,7 +69,7 @@ const TrafficTab: React.FC<TrafficTabProps> = () => {
                 name="avgReadRequests"
                 id="avgReadRequests"
                 value={avgReadRequests}
-                onChange={(e) => setAvgReadRequests(e.target.value)}
+                onChange={(e) => onAvgReadRequestsChange(e.target.value)}
                 className="shadow-sm focus:ring-blue-500 focus:border-blue-500 block w-full sm:text-sm border-gray-300 rounded-md"
                 placeholder="Enter average read requests per user"
                 min="0"
@@ -84,7 +91,7 @@ const TrafficTab: React.FC<TrafficTabProps> = () => {
                 name="avgWriteRequests"
                 id="avgWriteRequests"
                 value={avgWriteRequests}
-                onChange={(e) => setAvgWriteRequests(e.target.value)}
+                onChange={(e) => onAvgWriteRequestsChange(e.target.value)}
                 className="shadow-sm focus:ring-blue-500 focus:border-blue-500 block w-full sm:text-sm border-gray-300 rounded-md"
                 placeholder="Enter average write requests per user"
                 min="0"
