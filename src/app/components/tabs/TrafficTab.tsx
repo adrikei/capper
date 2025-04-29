@@ -35,13 +35,44 @@ const TrafficTab: React.FC<TrafficTabProps> = ({
     const [reads, writes] = readWriteRatio.split(':').map(Number);
     const writeMultiplier = 1 / writes;
 
+    const dailyReads = users * reads * writeMultiplier;
+    const dailyWrites = users * writeMultiplier;
+
+    // Calculate per-second rates (assuming 24-hour day)
+    const secondsInDay = 24 * 60 * 60;
+    const readsPerSecond = dailyReads / secondsInDay;
+    const writesPerSecond = dailyWrites / secondsInDay;
+
+    // Calculate peak rates (80% of requests in 20% of time)
+    const peakTimeSeconds = secondsInDay * 0.2; // 20% of the day
+    const peakReadsPerSecond = (dailyReads * 0.8) / peakTimeSeconds;
+    const peakWritesPerSecond = (dailyWrites * 0.8) / peakTimeSeconds;
+
     return {
-      totalReadRequests: users * reads * writeMultiplier,
-      totalWriteRequests: users * writeMultiplier,
+      totalReadRequests: dailyReads,
+      totalWriteRequests: dailyWrites,
+      readsPerSecond,
+      writesPerSecond,
+      peakReadsPerSecond,
+      peakWritesPerSecond,
     };
   };
 
-  const { totalReadRequests, totalWriteRequests } = calculateTotalRequests();
+  const { 
+    totalReadRequests, 
+    totalWriteRequests, 
+    readsPerSecond, 
+    writesPerSecond,
+    peakReadsPerSecond,
+    peakWritesPerSecond
+  } = calculateTotalRequests();
+
+  const formatNumber = (num: number) => {
+    if (num < 1) {
+      return num.toFixed(2);
+    }
+    return num.toLocaleString(undefined, { maximumFractionDigits: 2 });
+  };
 
   return (
     <div className="p-4">
@@ -134,6 +165,42 @@ const TrafficTab: React.FC<TrafficTabProps> = ({
               </p>
               <p className="mt-2 text-sm text-gray-500">
                 Daily write requests across all users
+              </p>
+            </div>
+            <div className="bg-gray-50 p-4 rounded-lg">
+              <h4 className="text-sm font-medium text-gray-500">Read Requests per Second</h4>
+              <p className="mt-1 text-2xl font-semibold text-gray-900">
+                {formatNumber(readsPerSecond)}
+              </p>
+              <p className="mt-2 text-sm text-gray-500">
+                Average read requests per second
+              </p>
+            </div>
+            <div className="bg-gray-50 p-4 rounded-lg">
+              <h4 className="text-sm font-medium text-gray-500">Write Requests per Second</h4>
+              <p className="mt-1 text-2xl font-semibold text-gray-900">
+                {formatNumber(writesPerSecond)}
+              </p>
+              <p className="mt-2 text-sm text-gray-500">
+                Average write requests per second
+              </p>
+            </div>
+            <div className="bg-gray-50 p-4 rounded-lg">
+              <h4 className="text-sm font-medium text-gray-500">Peak Read Requests per Second</h4>
+              <p className="mt-1 text-2xl font-semibold text-gray-900">
+                {formatNumber(peakReadsPerSecond)}
+              </p>
+              <p className="mt-2 text-sm text-gray-500">
+                Peak read requests (80% of traffic in 20% of time)
+              </p>
+            </div>
+            <div className="bg-gray-50 p-4 rounded-lg">
+              <h4 className="text-sm font-medium text-gray-500">Peak Write Requests per Second</h4>
+              <p className="mt-1 text-2xl font-semibold text-gray-900">
+                {formatNumber(peakWritesPerSecond)}
+              </p>
+              <p className="mt-2 text-sm text-gray-500">
+                Peak write requests (80% of traffic in 20% of time)
               </p>
             </div>
           </div>
