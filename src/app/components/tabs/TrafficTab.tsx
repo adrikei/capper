@@ -1,6 +1,6 @@
 'use client';
 
-import React from 'react';
+import React, { useState } from 'react';
 
 type Magnitude = '1' | '1K' | '1M' | '1B';
 type ReadWriteRatio = '10:1' | '50:1' | '100:1';
@@ -22,39 +22,68 @@ const TrafficTab: React.FC<TrafficTabProps> = ({
   onDailyUsersMagnitudeChange,
   onReadWriteRatioChange,
 }) => {
+  const [roundToNeat, setRoundToNeat] = useState(false);
+
+  const roundToNearestNeat = (num: number): number => {
+    if (num < 1) return Math.ceil(num * 100) / 100;
+    
+    const magnitude = Math.floor(Math.log10(num));
+    const base = Math.pow(10, magnitude);
+    const normalized = num / base;
+    
+    // Round to nearest whole number
+    const roundedNormalized = Math.ceil(normalized);
+    return roundedNormalized * base;
+  };
+
+  const formatNumber = (num: number) => {
+    if (roundToNeat) {
+      const rounded = roundToNearestNeat(num);
+      return rounded.toLocaleString(undefined, { maximumFractionDigits: 2 });
+    }
+    
+    if (num < 1) {
+      return num.toFixed(2);
+    }
+    return num.toLocaleString(undefined, { maximumFractionDigits: 2 });
+  };
+
   const calculateTotalRequests = () => {
     const baseUsers = parseInt(dailyUsersNumber) || 0;
     const magnitudeMultiplier = {
-      '1': 1,
-      '1K': 1000,
-      '1M': 1000000,
-      '1B': 1000000000,
+        '1': 1,
+        '1K': 1000,
+        '1M': 1000000,
+        '1B': 1000000000,
     }[dailyUsersMagnitude];
     
     const users = baseUsers * magnitudeMultiplier;
     const [reads, writes] = readWriteRatio.split(':').map(Number);
     const writeMultiplier = 1 / writes;
 
-    const dailyReads = users * reads * writeMultiplier;
-    const dailyWrites = users * writeMultiplier;
+    // Calculate total requests without applying neat rounding
+    const dailyReads = Math.round(users * reads * writeMultiplier);
+    const dailyWrites = Math.round(users * writeMultiplier);
 
-    // Calculate per-second rates (assuming 24-hour day)
+    // Determine seconds in day
     const secondsInDay = 24 * 60 * 60;
-    const readsPerSecond = dailyReads / secondsInDay;
-    const writesPerSecond = dailyWrites / secondsInDay;
 
-    // Calculate peak rates (80% of requests in 20% of time)
-    const peakTimeSeconds = secondsInDay * 0.2; // 20% of the day
-    const peakReadsPerSecond = (dailyReads * 0.8) / peakTimeSeconds;
-    const peakWritesPerSecond = (dailyWrites * 0.8) / peakTimeSeconds;
+    // Calculate per-second rates without neat rounding
+    const readsPerSecond = Math.round(dailyReads / secondsInDay);
+    const writesPerSecond = Math.round(dailyWrites / secondsInDay);
+
+    // Calculate peak rates without neat rounding
+    const peakTimeSeconds = Math.round(secondsInDay * 0.2); // Convert decimal fraction back to whole number
+    const peakReadsPerSecond = Math.round((dailyReads * 0.8) / peakTimeSeconds);
+    const peakWritesPerSecond = Math.round((dailyWrites * 0.8) / peakTimeSeconds);
 
     return {
-      totalReadRequests: dailyReads,
-      totalWriteRequests: dailyWrites,
-      readsPerSecond,
-      writesPerSecond,
-      peakReadsPerSecond,
-      peakWritesPerSecond,
+        totalReadRequests: dailyReads,
+        totalWriteRequests: dailyWrites,
+        readsPerSecond,
+        writesPerSecond,
+        peakReadsPerSecond,
+        peakWritesPerSecond,
     };
   };
 
@@ -66,13 +95,6 @@ const TrafficTab: React.FC<TrafficTabProps> = ({
     peakReadsPerSecond,
     peakWritesPerSecond
   } = calculateTotalRequests();
-
-  const formatNumber = (num: number) => {
-    if (num < 1) {
-      return num.toFixed(2);
-    }
-    return num.toLocaleString(undefined, { maximumFractionDigits: 2 });
-  };
 
   return (
     <div className="p-4">
@@ -144,6 +166,19 @@ const TrafficTab: React.FC<TrafficTabProps> = ({
               Select the ratio of read to write requests.
             </p>
           </div>
+
+          <div className="flex items-center">
+            <input
+              type="checkbox"
+              id="roundToNeat"
+              checked={roundToNeat}
+              onChange={(e) => setRoundToNeat(e.target.checked)}
+              className="h-4 w-4 text-blue-600 focus:ring-blue-500 border-gray-300 rounded"
+            />
+            <label htmlFor="roundToNeat" className="ml-2 block text-sm text-gray-700">
+              Round numbers to nearest neat value
+            </label>
+          </div>
         </div>
 
         <div className="border-l border-gray-200 pl-8">
@@ -152,7 +187,7 @@ const TrafficTab: React.FC<TrafficTabProps> = ({
             <div className="bg-gray-50 p-4 rounded-lg">
               <h4 className="text-sm font-medium text-gray-500">Total Read Requests</h4>
               <p className="mt-1 text-2xl font-semibold text-gray-900">
-                {totalReadRequests.toLocaleString()}
+                {formatNumber(totalReadRequests)}
               </p>
               <p className="mt-2 text-sm text-gray-500">
                 Daily read requests across all users
@@ -161,7 +196,7 @@ const TrafficTab: React.FC<TrafficTabProps> = ({
             <div className="bg-gray-50 p-4 rounded-lg">
               <h4 className="text-sm font-medium text-gray-500">Total Write Requests</h4>
               <p className="mt-1 text-2xl font-semibold text-gray-900">
-                {totalWriteRequests.toLocaleString()}
+                {formatNumber(totalWriteRequests)}
               </p>
               <p className="mt-2 text-sm text-gray-500">
                 Daily write requests across all users
