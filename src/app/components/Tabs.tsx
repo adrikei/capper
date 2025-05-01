@@ -28,6 +28,9 @@ export const Tabs: React.FC = () => {
   const [storageRoundToNeat, setStorageRoundToNeat] = useState(false);
   const [replicationFactor, setReplicationFactor] = useState(1);
 
+  // Bandwidth-related state
+  const [bandwidthRoundToNeat, setBandwidthRoundToNeat] = useState(false);
+
   const tabs: { id: Tab; label: string }[] = [
     { id: 'project', label: 'Project Details' },
     { id: 'traffic', label: 'Traffic' },
@@ -60,6 +63,35 @@ export const Tabs: React.FC = () => {
     };
   };
   const writeRequests = getWriteRequests();
+
+  // Calculate write/read requests for bandwidth tab
+  const getBandwidthRequests = () => {
+    const baseUsers = parseInt(dailyUsersNumber) || 0;
+    const magnitudeMultiplier = {
+      '1': 1,
+      '1K': 1000,
+      '1M': 1000000,
+      '1B': 1000000000,
+    }[dailyUsersMagnitude];
+    const users = baseUsers * magnitudeMultiplier;
+    const [reads, writes] = readWriteRatio.split(':').map(Number);
+    const writeMultiplier = 1 / writes;
+    const totalWrites = users * writeMultiplier;
+    const totalReads = users * reads * writeMultiplier;
+    const secondsInDay = 24 * 60 * 60;
+    const writesPerSecond = totalWrites / secondsInDay;
+    const readsPerSecond = totalReads / secondsInDay;
+    const peakTimeSeconds = secondsInDay * 0.2;
+    const peakWritesPerSecond = (totalWrites * 0.8) / peakTimeSeconds;
+    const peakReadsPerSecond = (totalReads * 0.8) / peakTimeSeconds;
+    return {
+      writesPerSecond,
+      readsPerSecond,
+      peakWritesPerSecond,
+      peakReadsPerSecond,
+    };
+  };
+  const bandwidthRequests = getBandwidthRequests();
 
   return (
     <div className="w-full">
@@ -120,8 +152,28 @@ export const Tabs: React.FC = () => {
             onReplicationFactorChange={setReplicationFactor}
           />
         )}
-        {activeTab === 'bandwidth' && <BandwidthTab />}
-        {activeTab === 'memory' && <MemoryTab />}
+        {activeTab === 'bandwidth' && (
+          <BandwidthTab
+            writesPerSecond={bandwidthRequests.writesPerSecond}
+            readsPerSecond={bandwidthRequests.readsPerSecond}
+            peakWritesPerSecond={bandwidthRequests.peakWritesPerSecond}
+            peakReadsPerSecond={bandwidthRequests.peakReadsPerSecond}
+            artifactSize={artifactSize}
+            artifactMagnitude={artifactMagnitude}
+            roundToNeat={bandwidthRoundToNeat}
+            onRoundToNeatChange={setBandwidthRoundToNeat}
+          />
+        )}
+        {activeTab === 'memory' && (
+          <MemoryTab
+            artifactSize={artifactSize}
+            artifactMagnitude={artifactMagnitude}
+            totalWrites={writeRequests.totalWrites}
+            retentionYears={retentionYears}
+            replicationFactor={replicationFactor}
+            roundToNeat={storageRoundToNeat}
+          />
+        )}
       </div>
     </div>
   );
