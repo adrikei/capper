@@ -51,10 +51,10 @@ const TrafficTab: React.FC<TrafficTabProps> = ({
   const calculateTotalRequests = () => {
     const baseUsers = parseInt(dailyUsersNumber) || 0;
     const magnitudeMultiplier = {
-        '1': 1,
-        '1K': 1000,
-        '1M': 1000000,
-        '1B': 1000000000,
+        '1': 10 ** 0,
+        '1K': 10 ** 3,
+        '1M': 10 ** 6,
+        '1B': 10 ** 9,
     }[dailyUsersMagnitude];
     
     const users = baseUsers * magnitudeMultiplier;

@@ -95,6 +95,7 @@ export const Tabs: React.FC = () => {
 
   return (
     <div className="w-full">
+      <h1 className="text-3xl font-bold text-gray-900 mb-8">{projectName} Capacity Planner</h1>
       <div className="border-b border-gray-200">
         <nav className="-mb-px flex space-x-8" aria-label="Tabs">
           {tabs.map((tab) => (

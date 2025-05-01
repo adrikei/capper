@@ -12,8 +12,8 @@ interface MemoryTabProps {
 }
 
 const magnitudeToBytes: Record<string, number> = {
-  B: 1,
-  KB: 1024,
+  B: 1024 ** 0,
+  KB: 1024 ** 1,
   MB: 1024 ** 2,
   GB: 1024 ** 3,
   TB: 1024 ** 4,
